@@ -10,6 +10,7 @@ def main():
         exit(1)
 
     try:
+        # 物理尺寸
         w = int(sys.argv[1])
         h = int(sys.argv[2])
     except ValueError:
@@ -20,13 +21,15 @@ def main():
     scale = 200
 
     while scale >= 100:
-        logical_w = w * 100 / scale
-        logical_h = h * 100 / scale
+        logical_w = int(w * 100 / scale)
+        logical_h = int(h * 100 / scale)
 
-        lw_str = str(logical_w)
-        lh_str = str(logical_h)
-        if lw_str.endswith('.0') and lh_str.endswith('.0'):
-            print(f'scale = {scale}%, logical width = {logical_w}, logical height = {logical_h}')
+        lw_remain = w * 100 % scale
+        lh_remain = h * 100 % scale
+
+        if lw_remain == 0 and lh_remain == 0:
+            print(f'scale = {scale}%, logical = {logical_w:4} x {logical_h:4}')
+
         scale -= 1
 
 if __name__ == '__main__':
