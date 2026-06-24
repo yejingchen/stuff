@@ -27,10 +27,10 @@ fn main() {
     let stat_in_pages: [OsString; _] = ["stored_pages".into(), "stored_incompressible_pages".into()];
     let stat_in_bytes: [OsString; _] = ["pool_total_size".into()];
 
-    let mut args = env::args_os().enumerate();
+    let mut args = env::args_os();
     args.next(); // skip program name
     let arg1 = args.next();
-    let zswap_debugfs_path = if let Some((1, path)) = arg1.as_ref() {
+    let zswap_debugfs_path = if let Some(path) = arg1.as_ref() {
         path
     } else {
         default_zswap_debugfs_path
