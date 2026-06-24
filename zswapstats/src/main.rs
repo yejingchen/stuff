@@ -28,7 +28,7 @@ fn main() {
     let stat_in_bytes: [OsString; _] = ["pool_total_size".into()];
 
     let mut args = env::args_os().enumerate();
-    args.next();
+    args.next(); // skip program name
     let arg1 = args.next();
     let zswap_debugfs_path = if let Some((1, path)) = arg1.as_ref() {
         path
@@ -61,15 +61,15 @@ fn main() {
                 continue;
             }
         };
-        let value = &value[..value.len()-1];
+        let value = value.trim();
 
-        let keyname = direntry.file_name();
-        let key = keyname.display();
-        if stat_in_pages.contains(&keyname) {
+        let key_filename = direntry.file_name();
+        let key = key_filename.display();
+        if stat_in_pages.contains(&key_filename) {
             let nbytes = value.parse::<u64>().unwrap() * getpagesize() as u64;
             let (human_num, unit) = human_size(nbytes);
             println!("{}:\t{:.1} {}", key, human_num, unit);
-        } else if stat_in_bytes.contains(&keyname) {
+        } else if stat_in_bytes.contains(&key_filename) {
             let nbytes = value.parse().unwrap();
             let (human_num, unit) = human_size(nbytes);
             println!("{}:\t{:.1} {}", key, human_num, unit);
