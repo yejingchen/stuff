@@ -1,30 +1,31 @@
-use std::{ffi::OsStr, fs};
+use std::fs;
+use std::ffi::{OsStr, OsString};
 use std::env;
-
-const MEM_SIZE_UNITS: [&str; 5] = ["B", "KiB", "MiB", "GiB", "TiB"];
-const MEM_SIZE_STEP: u64 = 1024;
 
 unsafe extern "C" {
     safe fn getpagesize() -> i32;
 }
 
-/// Returns human size and division count in a tuple.
-fn human_size(mut num: u64, div: u64) -> (f32, usize) {
+/// Returns human size and unit in a tuple.
+fn human_size(mut num: u64) -> (f32, &'static str) {
+    const UNITS: [&str; 5] = ["B", "KiB", "MiB", "GiB", "TiB"];
+    const STEP: u64 = 1024;
+
     let mut prev = num;
     let mut count = 0;
-    while num > div {
+    while num > STEP {
         prev = num;
-        num /= div;
+        num /= STEP;
         count += 1;
     }
 
-    (prev as f32 / div as f32, count)
+    (prev as f32 / STEP as f32, UNITS[count])
 }
 
 fn main() {
     let default_zswap_debugfs_path = OsStr::new("/sys/kernel/debug/zswap");
-    let stat_in_pages = [OsStr::new("stored_pages"), OsStr::new("stored_incompressible_pages")];
-    let stat_in_bytes = [OsStr::new("pool_total_size")];
+    let stat_in_pages: [OsString; 2] = ["stored_pages".into(), "stored_incompressible_pages".into()];
+    let stat_in_bytes: [OsString; 1] = ["pool_total_size".into()];
 
     let mut args = env::args_os().enumerate();
     args.next();
@@ -64,14 +65,14 @@ fn main() {
 
         let keyname = direntry.file_name();
         let key = keyname.display();
-        if stat_in_pages.contains(&direntry.file_name().as_ref()) {
+        if stat_in_pages.contains(&keyname) {
             let nbytes = value.parse::<u64>().unwrap() * getpagesize() as u64;
-            let (human_num, count) = human_size(nbytes, MEM_SIZE_STEP);
-            println!("{}:\t{:.1} {}", key, human_num, MEM_SIZE_UNITS[count]);
-        } else if stat_in_bytes.contains(&direntry.file_name().as_ref()) {
+            let (human_num, unit) = human_size(nbytes);
+            println!("{}:\t{:.1} {}", key, human_num, unit);
+        } else if stat_in_bytes.contains(&keyname) {
             let nbytes = value.parse().unwrap();
-            let (human_num, count) = human_size(nbytes, MEM_SIZE_STEP);
-            println!("{}:\t{:.1} {}", key, human_num, MEM_SIZE_UNITS[count]);
+            let (human_num, unit) = human_size(nbytes);
+            println!("{}:\t{:.1} {}", key, human_num, unit);
         } else {
             println!("{}:\t{}", key, value);
         }
