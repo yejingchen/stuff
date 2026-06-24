@@ -24,8 +24,8 @@ fn human_size(mut num: u64) -> (f32, &'static str) {
 
 fn main() {
     let default_zswap_debugfs_path = OsStr::new("/sys/kernel/debug/zswap");
-    let stat_in_pages: [OsString; 2] = ["stored_pages".into(), "stored_incompressible_pages".into()];
-    let stat_in_bytes: [OsString; 1] = ["pool_total_size".into()];
+    let stat_in_pages: [OsString; _] = ["stored_pages".into(), "stored_incompressible_pages".into()];
+    let stat_in_bytes: [OsString; _] = ["pool_total_size".into()];
 
     let mut args = env::args_os().enumerate();
     args.next();
