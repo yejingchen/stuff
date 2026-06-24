@@ -3,7 +3,10 @@ use std::env;
 
 const MEM_SIZE_UNITS: [&str; 5] = ["B", "KiB", "MiB", "GiB", "TiB"];
 const MEM_SIZE_STEP: u64 = 1024;
-const PAGE_SIZE: u64 = 4096; // TODO: get from system
+
+unsafe extern "C" {
+    safe fn getpagesize() -> i32;
+}
 
 /// Returns human size and division count in a tuple.
 fn human_size(mut num: u64, div: u64) -> (f32, usize) {
@@ -62,7 +65,7 @@ fn main() {
         let keyname = direntry.file_name();
         let key = keyname.display();
         if stat_in_pages.contains(&direntry.file_name().as_ref()) {
-            let nbytes = value.parse::<u64>().unwrap() * PAGE_SIZE;
+            let nbytes = value.parse::<u64>().unwrap() * getpagesize() as u64;
             let (human_num, count) = human_size(nbytes, MEM_SIZE_STEP);
             println!("{}:\t{:.1} {}", key, human_num, MEM_SIZE_UNITS[count]);
         } else if stat_in_bytes.contains(&direntry.file_name().as_ref()) {
